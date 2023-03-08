@@ -18,33 +18,28 @@ server.use('/static', express.static(path.join(process.env.PWD, "/../app/build/s
 server.get("/summoners/:summonerId/match-history", async (req: Request, res: Response) => {
   try {
     const summonerData = await getSummonerByName(req.params.summonerId)
-    console.log(summonerData)
     const recentMatchIds = await getMatchesByPuuid(summonerData.puuid)
-    console.log(recentMatchIds)
     const matches = await Promise.all(
       recentMatchIds.map((matchId: String) => getMatchById(matchId))
     )
-    console.log(matches)
-    const matchHistoryResults = matches.map((match) => {
+    const matchHistoryResults = matches.map(match => {
       const participant = match.info.participants.find(
-        (participant) => participant.puuid == summonerData.puuid
+        participant => participant.puuid == summonerData.puuid
       )
       return {
-        // outcome: String
+        outcome: participant.win ? 'Victory' : 'Defeat',
+        gameEndTimestamp: match.info.gameEndTimestamp,
         gameDuration: match.info.gameDuration,
         summonerName: participant.summonerName,
-        // summonerSpells: Array<number>
-        // summonerPerks: Array<number>
         championId: participant.championId,
         championName: participant.championName,
+        championAvatarUrl: `http://ddragon.leagueoflegends.com/cdn/13.4.1/img/champion/${participant.championName}.png`,
         kills: participant.kills,
         deaths: participant.deaths,
         assists: participant.assists,
         championLevel: participant.championLevel
       }
     })
-
-    console.log(matchHistoryResults)
 
     res.json({
       "results": matchHistoryResults
