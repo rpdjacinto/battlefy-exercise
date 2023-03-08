@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   VStack,
@@ -6,12 +6,12 @@ import {
   Center,
   Input,
   ChakraProvider,
+  Heading,
   Spinner,
   Text
 } from '@chakra-ui/react'
 import {
   useQuery,
-  useQueryClient,
   QueryClient,
   QueryClientProvider,
 } from 'react-query'
@@ -22,23 +22,25 @@ import MatchListItem from './components/MatchListItem'
 
 const queryClient = new QueryClient()
 
-const MatchList = (matches) => {
-  if (!matches) {
-    return (
-      <Text>No matches exist for this Summoner.</Text>
-    )
-  }
+const MatchList = ({ summonerName }) => {
+  const { isLoading, isError, data } = useQuery({
+    queryKey: ["results", summonerName],
+    queryFn: () => getMatchHistory(summonerName),
+    enabled: summonerName.length > 0
+  })
 
-  console.log(matches)
+  if (!data) {
+    return <Text>There are no matches for this Summoner.</Text>
+  }
 
   return (
     <>
-      {/* {matches.map((match) => {
-        <MatchListItem
+      {!!summonerName && !isLoading && !isError && data && data.map((match) => {
+        return <MatchListItem
           gameDuration={match.gameDuration}
           gameEndTimestamp={match.gameEndTimestamp}
           gameType={match.gameType}
-          outcome={match.Outcome}
+          outcome={match.outcome}
           championName={match.championName}
           championAvatarUrl={match.championAvatarUrl}
           championLevel={match.championLevel}
@@ -46,7 +48,7 @@ const MatchList = (matches) => {
           deaths={match.deaths}
           assists={match.assists}
         />
-      })} */}
+      })}
     </>
   )
 
@@ -55,20 +57,6 @@ const MatchList = (matches) => {
 const SummonerMatchHistory = () => {
   const [summonerName, setSummonerName] = useState('')
   const handleSummonerNameChange = (event) => setSummonerName(event.target.value)
-
-  const data = useMemo(() => {
-    if (!summonerName) {
-      return []
-    }
-    try {
-      return getMatchHistory(summonerName)
-    }
-    catch {
-      return []
-    }
-  }, [summonerName])
-  
-  const matchHistoryList = <MatchList matches={data}/>
 
   return (
     <Container maxW="2xl">
@@ -82,7 +70,7 @@ const SummonerMatchHistory = () => {
           />
         </Box>
         <Box w="100%">
-          {matchHistoryList}
+          <MatchList summonerName={summonerName} />
         </Box>
       </VStack>
     </Container>
@@ -94,7 +82,10 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ChakraProvider>
         <Center w="100vw" h="100vh">
-          <SummonerMatchHistory />
+          <VStack w="100%">
+            <Heading size='xl'>League Stats</Heading>
+            <SummonerMatchHistory />
+          </VStack>
         </Center>
       </ChakraProvider>
     </QueryClientProvider>
