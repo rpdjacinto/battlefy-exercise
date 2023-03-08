@@ -8,42 +8,46 @@ dotenv.config()
 
 const server: Express = express()
 
-server.use(express.static("public"))
+server.use('/static', express.static(path.join(process.env.PWD, "/../app/build/static")))
 
 server.get("/summoners/:summonerId/match-history", async (req: Request, res: Response) => {
-  const summonerData = await getSummonerByName(req.params.summonerId)
-  const recentMatchIds = await getMatchesByPuuid(summonerData.puuid)
-
-  const matches = await Promise.all(
-    recentMatchIds.map((matchId: String) => getMatchById(matchId))
-  )
-
-  const matchHistoryResults = matches.map((match) => {
-    const participant = match.info.participants.find(
-      (participant) => participant.puuid == summonerData.puuid
+  try {
+    const summonerData = await getSummonerByName(req.params.summonerId)
+    const recentMatchIds = await getMatchesByPuuid(summonerData.puuid)
+    const matches = await Promise.all(
+      recentMatchIds.map((matchId: String) => getMatchById(matchId)).then((response) => response.json())
     )
-    return {
-      // outcome: String
-      gameDuration: match.info.gameDuration,
-      summonerName: participant.summonerName,
-      // summonerSpells: Array<number>
-      // summonerPerks: Array<number>
-      championId: participant.championId,
-      championName: participant.championName,
-      kills: participant.kills,
-      deaths: participant.deaths,
-      assists: participant.assists,
-      championLevel: participant.championLevel
-    }
-  })
+    const matchHistoryResults = matches.map((match) => {
+      const participant = match.info.participants.find(
+        (participant) => participant.puuid == summonerData.puuid
+      )
+      return {
+        // outcome: String
+        gameDuration: match.info.gameDuration,
+        summonerName: participant.summonerName,
+        // summonerSpells: Array<number>
+        // summonerPerks: Array<number>
+        championId: participant.championId,
+        championName: participant.championName,
+        kills: participant.kills,
+        deaths: participant.deaths,
+        assists: participant.assists,
+        championLevel: participant.championLevel
+      }
+    })
 
-  res.json({
-    "results": matchHistoryResults
-  })
+    res.json({
+      "results": matchHistoryResults
+    })
+  } catch {
+    res.json({
+      "results": []
+    })
+  }
 })
 
 server.get("/", (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, "client", "index.html"));
+    res.sendFile(path.join(process.env.PWD, "/../app/build/", "index.html"));
 })
 
 server.listen(process.env.PORT, () => {

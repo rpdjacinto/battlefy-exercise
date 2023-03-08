@@ -25,7 +25,7 @@ dayjs.extend(duration)
 
 const MatchListItem = ({
   gameDuration,
-  gameDate,
+  gameEndTimestamp,
   gameType,
   outcome,
   kills,
@@ -36,7 +36,7 @@ const MatchListItem = ({
   championLevel,
 }) => {
 
-  const gameDateString: String = dayjs(gameDate).fromNow()
+  const gameDateString: String = dayjs(gameEndTimestamp).fromNow()
 
   return (
     <Container width="100%">

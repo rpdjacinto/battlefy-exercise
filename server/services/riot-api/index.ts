@@ -18,10 +18,7 @@ const apiCall = async (
     {
       method: "GET"
     })
-      .then((response) => response.json())
-      .catch((error) => {
-          console.error(error);
-    })
+    .then((response) => response.json())
 }
 
 export const getSummonerByName = async (name: string) => {
