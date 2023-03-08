@@ -27,6 +27,7 @@ server.get("/summoners/:summonerId/match-history", async (req: Request, res: Res
         participant => participant.puuid == summonerData.puuid
       )
       return {
+        matchId: match.matchId,
         outcome: participant.win ? 'Victory' : 'Defeat',
         gameEndTimestamp: match.info.gameEndTimestamp,
         gameDuration: match.info.gameDuration,

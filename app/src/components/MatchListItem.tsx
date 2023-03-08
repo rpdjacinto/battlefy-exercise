@@ -37,6 +37,7 @@ const MatchListItem = ({
 }) => {
 
   const gameDateString: String = dayjs(gameEndTimestamp).fromNow()
+  const gameDurationString: String = dayjs.duration(gameDuration, "seconds").humanize()
 
   return (
     <Container width="100%">
@@ -44,7 +45,7 @@ const MatchListItem = ({
         <CardHeader>
           <Box>
             <Heading size='sm'>{gameType} ({outcome})</Heading>
-            <Text>{gameDateString} | {gameDuration}</Text>
+            <Text>{gameDateString} | {gameDurationString}</Text>
           </Box>
         </CardHeader>
 
